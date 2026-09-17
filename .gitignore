@@ -1,0 +1,24 @@
+## [Visual Studio / .NET]
+bin/
+obj/
+out/
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.pidb
+*.booproj
+*.svclog
+
+## Build & Test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.visualstate
+
+## OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store

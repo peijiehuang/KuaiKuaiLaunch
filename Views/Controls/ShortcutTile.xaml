@@ -1,0 +1,141 @@
+﻿<UserControl x:Class="KuaiKuaiLaunch.Views.Controls.ShortcutTile"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:vm="clr-namespace:KuaiKuaiLaunch.ViewModels"
+             xmlns:conv="clr-namespace:KuaiKuaiLaunch.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="96" d:DesignWidth="88"
+             Cursor="Hand">
+
+    <UserControl.ContextMenu>
+        <ContextMenu>
+            <ui:MenuItem Header="打开" Command="{Binding LaunchCommand}">
+                <ui:MenuItem.Icon>
+                    <ui:SymbolIcon Symbol="Play24" />
+                </ui:MenuItem.Icon>
+            </ui:MenuItem>
+            <ui:MenuItem Header="以管理员身份运行" Command="{Binding LaunchAsAdminCommand}">
+                <ui:MenuItem.Icon>
+                    <ui:SymbolIcon Symbol="Shield24" />
+                </ui:MenuItem.Icon>
+            </ui:MenuItem>
+            <ui:MenuItem Header="打开文件所在位置" Command="{Binding OpenFileLocationCommand}">
+                <ui:MenuItem.Icon>
+                    <ui:SymbolIcon Symbol="FolderOpen24" />
+                </ui:MenuItem.Icon>
+            </ui:MenuItem>
+            <Separator />
+            <ui:MenuItem Header="属性 / 编辑" Command="{Binding EditCommand}">
+                <ui:MenuItem.Icon>
+                    <ui:SymbolIcon Symbol="Edit24" />
+                </ui:MenuItem.Icon>
+            </ui:MenuItem>
+            <ui:MenuItem Header="删除" Command="{Binding DeleteCommand}">
+                <ui:MenuItem.Icon>
+                    <ui:SymbolIcon Symbol="Delete24" />
+                </ui:MenuItem.Icon>
+            </ui:MenuItem>
+        </ContextMenu>
+    </UserControl.ContextMenu>
+
+    <Border x:Name="RootBorder"
+            Background="Transparent"
+            BorderBrush="Transparent"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="6,8"
+            Margin="4"
+            MouseLeftButtonUp="OnMouseLeftButtonUp">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+
+        <Border.ToolTip>
+            <ToolTip>
+                <StackPanel Margin="4" MaxWidth="300">
+                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="13" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding TargetPath}" Margin="0,4,0,0" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding Description}" Margin="0,2,0,0" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" 
+                               Visibility="{Binding Description, Converter={x:Static conv:StringNullOrEmptyToVisibilityConverter.Instance}}" />
+                </StackPanel>
+            </ToolTip>
+        </Border.ToolTip>
+
+        <Grid HorizontalAlignment="Center">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Icon Container -->
+            <Grid Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Width="48" Height="48">
+                <!-- Fallback Symbol Icon if Image is null -->
+                <ui:SymbolIcon Symbol="AppGeneric24" FontSize="36" 
+                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <ui:SymbolIcon.Style>
+                        <Style TargetType="ui:SymbolIcon">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IconImage}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ui:SymbolIcon.Style>
+                </ui:SymbolIcon>
+
+                <!-- Shortcut Icon -->
+                <Image Source="{Binding IconImage}" 
+                       Stretch="Uniform" 
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="HighQuality">
+                    <Image.Style>
+                        <Style TargetType="Image">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IconImage}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
+
+                <!-- Admin Shield Badge -->
+                <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
+                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Padding="2"
+                        Margin="0,0,-4,-4"
+                        Visibility="{Binding RunAsAdmin, Converter={x:Static conv:BooleanToVisibilityConverter.Instance}}">
+                    <ui:SymbolIcon Symbol="Shield20" FontSize="10" Foreground="#FFA000" />
+                </Border>
+            </Grid>
+
+            <!-- Shortcut Title -->
+            <TextBlock Grid.Row="1"
+                       Text="{Binding Name}"
+                       FontSize="11.5"
+                       TextAlignment="Center"
+                       TextTrimming="CharacterEllipsis"
+                       MaxWidth="80"
+                       Margin="0,6,0,0"
+                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+        </Grid>
+    </Border>
+</UserControl>
