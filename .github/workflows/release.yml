@@ -4,11 +4,10 @@ on:
   push:
     tags:
       - 'v*'
-      - 'beta-*'
   workflow_dispatch:
     inputs:
       tag_name:
-        description: 'Release Tag Name (例如 v0.0.1 或 beta-v0.0.1)'
+        description: 'Release Tag Name (例如 v0.0.1)'
         required: false
         default: 'v0.0.1'
 
