@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Wpf.Ui.Controls;
 using KuaiKuaiLaunch.Models;
 using KuaiKuaiLaunch.Services;
@@ -594,18 +595,39 @@ namespace KuaiKuaiLaunch
         /// </summary>
         private void OnWindowDrop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            try
             {
-                if (e.Data.GetData(DataFormats.FileDrop) is string[] files) _viewModel.HandleDropFiles(files, null);
-            }
-            else if (e.Data.GetDataPresent(DataFormats.Text))
-            {
-                if (e.Data.GetData(DataFormats.Text) is string text && !string.IsNullOrWhiteSpace(text))
+                if (e.Data.GetDataPresent(DataFormats.FileDrop))
                 {
-                    _viewModel.HandleDropFiles(new[] { text.Trim() }, null);
+                    if (e.Data.GetData(DataFormats.FileDrop) is string[] files && files.Length > 0)
+                    {
+                        var filesCopy = (string[])files.Clone();
+                        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+                        {
+                            _viewModel.HandleDropFiles(filesCopy, null);
+                        }));
+                    }
+                }
+                else if (e.Data.GetDataPresent(DataFormats.Text))
+                {
+                    if (e.Data.GetData(DataFormats.Text) is string text && !string.IsNullOrWhiteSpace(text))
+                    {
+                        string cleanText = text.Trim();
+                        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+                        {
+                            _viewModel.HandleDropFiles(new[] { cleanText }, null);
+                        }));
+                    }
                 }
             }
-            e.Handled = true;
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[OnWindowDrop] Drop error: {ex.Message}");
+            }
+            finally
+            {
+                e.Handled = true;
+            }
         }
 
         /// <summary>
@@ -616,18 +638,39 @@ namespace KuaiKuaiLaunch
             ShortcutGroupViewModel? targetGroup = null;
             if (sender is FrameworkElement elem && elem.DataContext is ShortcutGroupViewModel grp) targetGroup = grp;
 
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            try
             {
-                if (e.Data.GetData(DataFormats.FileDrop) is string[] files) _viewModel.HandleDropFiles(files, targetGroup);
-            }
-            else if (e.Data.GetDataPresent(DataFormats.Text))
-            {
-                if (e.Data.GetData(DataFormats.Text) is string text && !string.IsNullOrWhiteSpace(text))
+                if (e.Data.GetDataPresent(DataFormats.FileDrop))
                 {
-                    _viewModel.HandleDropFiles(new[] { text.Trim() }, targetGroup);
+                    if (e.Data.GetData(DataFormats.FileDrop) is string[] files && files.Length > 0)
+                    {
+                        var filesCopy = (string[])files.Clone();
+                        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+                        {
+                            _viewModel.HandleDropFiles(filesCopy, targetGroup);
+                        }));
+                    }
+                }
+                else if (e.Data.GetDataPresent(DataFormats.Text))
+                {
+                    if (e.Data.GetData(DataFormats.Text) is string text && !string.IsNullOrWhiteSpace(text))
+                    {
+                        string cleanText = text.Trim();
+                        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+                        {
+                            _viewModel.HandleDropFiles(new[] { cleanText }, targetGroup);
+                        }));
+                    }
                 }
             }
-            e.Handled = true;
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[OnGroupDrop] Drop error: {ex.Message}");
+            }
+            finally
+            {
+                e.Handled = true;
+            }
         }
 
         /// <summary>
@@ -639,18 +682,41 @@ namespace KuaiKuaiLaunch
             if (sender is FrameworkElement elem && elem.DataContext is CategoryViewModel cat) targetCat = cat;
             if (targetCat != null) _viewModel.SelectedCategory = targetCat;
 
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            try
             {
-                if (e.Data.GetData(DataFormats.FileDrop) is string[] files) _viewModel.HandleDropFiles(files, targetCat?.Groups.FirstOrDefault());
-            }
-            else if (e.Data.GetDataPresent(DataFormats.Text))
-            {
-                if (e.Data.GetData(DataFormats.Text) is string text && !string.IsNullOrWhiteSpace(text))
+                if (e.Data.GetDataPresent(DataFormats.FileDrop))
                 {
-                    _viewModel.HandleDropFiles(new[] { text.Trim() }, targetCat?.Groups.FirstOrDefault());
+                    if (e.Data.GetData(DataFormats.FileDrop) is string[] files && files.Length > 0)
+                    {
+                        var filesCopy = (string[])files.Clone();
+                        var group = targetCat?.Groups.FirstOrDefault();
+                        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+                        {
+                            _viewModel.HandleDropFiles(filesCopy, group);
+                        }));
+                    }
+                }
+                else if (e.Data.GetDataPresent(DataFormats.Text))
+                {
+                    if (e.Data.GetData(DataFormats.Text) is string text && !string.IsNullOrWhiteSpace(text))
+                    {
+                        string cleanText = text.Trim();
+                        var group = targetCat?.Groups.FirstOrDefault();
+                        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+                        {
+                            _viewModel.HandleDropFiles(new[] { cleanText }, group);
+                        }));
+                    }
                 }
             }
-            e.Handled = true;
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[OnCategoryDrop] Drop error: {ex.Message}");
+            }
+            finally
+            {
+                e.Handled = true;
+            }
         }
 
         /// <summary>

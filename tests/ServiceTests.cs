@@ -158,6 +158,142 @@ namespace KuaiKuaiLaunch.Tests
         }
 
         /// <summary>
+        /// 测试文件夹图标提取与本地 PNG 缓存生成
+        /// </summary>
+        [TestMethod]
+        public void IconExtractorService_ShouldExtractFolderIcon()
+        {
+            var storage = new StorageService();
+            var iconSvc = new IconExtractorService(storage);
+
+            string winDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            var item = new ShortcutItem
+            {
+                Name = "Windows",
+                TargetPath = winDir,
+                ItemType = ShortcutType.Folder
+            };
+
+            string savedIconPath = iconSvc.ExtractAndSaveIcon(item, winDir);
+            Assert.IsFalse(string.IsNullOrEmpty(savedIconPath), "应成功提取文件夹并生成图标文件路径");
+            Assert.IsTrue(File.Exists(savedIconPath), "缓存的文件夹图标 PNG 文件应物理存在于磁盘");
+
+            var image = iconSvc.LoadIconImage(item);
+            Assert.IsNotNull(image, "文件夹图标应能成功加载为 WPF ImageSource");
+        }
+
+        /// <summary>
+        /// 测试文件夹拖拽解析、图标生成与完整数据管道链路
+        /// </summary>
+        [TestMethod]
+        public void FolderDropPipeline_ShouldCreateValidFolderShortcutItemWithIcon()
+        {
+            var storage = new StorageService();
+            var parser = new LnkParserService(storage);
+            var iconSvc = new IconExtractorService(storage);
+            var launcher = new LauncherService(storage);
+
+            string tempDir = Path.Combine(Path.GetTempPath(), "KuaiKuaiTestFolder_" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(tempDir);
+
+            try
+            {
+                // 1. 测试解析拖拽文件夹物理路径
+                var folderItem = parser.ParseDroppedPath(tempDir);
+                Assert.AreEqual(ShortcutType.Folder, folderItem.ItemType, "应识别为文件夹类型");
+                Assert.AreEqual(Path.GetFileName(tempDir), folderItem.Name, "名称应为目录名");
+
+                // 2. 提取并生成图标
+                string iconPath = iconSvc.ExtractAndSaveIcon(folderItem, tempDir);
+                Assert.IsFalse(string.IsNullOrEmpty(iconPath), "应成功保存图标文件");
+                Assert.IsTrue(File.Exists(iconPath), "生成的图标文件应存在于磁盘");
+
+                // 3. 构建 ViewModel 并加载图标
+                var vm = new ViewModels.ShortcutItemViewModel(folderItem, launcher, iconSvc);
+                Assert.IsNotNull(vm.IconImage, "ViewModel 的 IconImage 应成功加载");
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                {
+                    try { Directory.Delete(tempDir, true); } catch { }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 测试带有 desktop.ini 自定义图标的文件夹能够安全解析并不死锁卡顿
+        /// </summary>
+        [TestMethod]
+        public void FolderWithCustomDesktopIni_ShouldExtractCustomIcon()
+        {
+            var storage = new StorageService();
+            var iconSvc = new IconExtractorService(storage);
+
+            string tempDir = Path.Combine(Path.GetTempPath(), "KuaiKuaiIniFolder_" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(tempDir);
+
+            try
+            {
+                // 创建一个模拟带有自定义图标配置的 desktop.ini
+                string iniPath = Path.Combine(tempDir, "desktop.ini");
+                File.WriteAllLines(iniPath, new[]
+                {
+                    "[.ShellClassInfo]",
+                    "IconResource=%SystemRoot%\\system32\\shell32.dll,3"
+                });
+
+                var folderItem = new ShortcutItem
+                {
+                    Name = "IniFolder",
+                    TargetPath = tempDir,
+                    ItemType = ShortcutType.Folder
+                };
+
+                string iconPath = iconSvc.ExtractAndSaveIcon(folderItem, tempDir);
+                Assert.IsFalse(string.IsNullOrEmpty(iconPath), "应能成功提取图标");
+                Assert.IsTrue(File.Exists(iconPath), "图标文件物理存在");
+
+                var image = iconSvc.LoadIconImage(folderItem);
+                Assert.IsNotNull(image, "应能成功加载为 WPF ImageSource");
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                {
+                    try { Directory.Delete(tempDir, true); } catch { }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 测试 MainViewModel.HandleDropFiles 在空分类或普通拖拽文件夹时的容错与顺利创建
+        /// </summary>
+        [TestMethod]
+        public void HandleDropFiles_ShouldSafelyAddFolderToGroup()
+        {
+            var storage = new StorageService();
+            var parser = new LnkParserService(storage);
+            var iconSvc = new IconExtractorService(storage);
+            var launcher = new LauncherService(storage);
+            var autoStart = new AutoStartService();
+
+            var mainVm = new ViewModels.MainViewModel(storage, parser, iconSvc, launcher, autoStart);
+            string winDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+
+            // 模拟将 Windows 文件夹拖拽释放入面板
+            mainVm.HandleDropFiles(new[] { winDir }, null);
+
+            Assert.IsNotNull(mainVm.SelectedCategory, "应存在选中的分类");
+            Assert.IsTrue(mainVm.SelectedCategory.Groups.Count > 0, "应具有至少一个分组");
+            
+            var targetGroup = mainVm.SelectedCategory.Groups[0];
+            var addedItem = targetGroup.Items.LastOrDefault(it => it.TargetPath.Contains(winDir) || it.Name == "Windows");
+            Assert.IsNotNull(addedItem, "分组中应当成功新增对应的文件夹快捷项目");
+            Assert.AreEqual(ShortcutType.Folder, addedItem.Model.ItemType);
+        }
+
+        /// <summary>
         /// 调试输出当前工作区与多显示器范围参数
         /// </summary>
         [TestMethod]

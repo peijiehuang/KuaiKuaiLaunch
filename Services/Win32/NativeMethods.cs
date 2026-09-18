@@ -37,6 +37,27 @@ namespace KuaiKuaiLaunch.Services.Win32
         public const uint SHGFI_USEFILEATTRIBUTES = 0x000000010;
         public const uint SHGFI_SYSICONINDEX = 0x000004000;
 
+        public const uint FILE_ATTRIBUTE_DIRECTORY = 0x00000010;
+        public const uint FILE_ATTRIBUTE_NORMAL = 0x00000080;
+
+        public const uint SIID_FOLDER = 3;
+        public const uint SHGSI_ICON = 0x000000100;
+        public const uint SHGSI_LARGEICON = 0x000000000;
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        public struct SHSTOCKICONINFO
+        {
+            public uint cbSize;
+            public IntPtr hIcon;
+            public int iSysImageIndex;
+            public int iIcon;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+            public string szPath;
+        }
+
+        [DllImport("shell32.dll", SetLastError = false)]
+        public static extern int SHGetStockIconInfo(uint siid, uint uFlags, ref SHSTOCKICONINFO psii);
+
         public const int SHIL_LARGE = 0x0;       // 32x32
         public const int SHIL_SMALL = 0x1;       // 16x16
         public const int SHIL_EXTRALARGE = 0x2;  // 48x48

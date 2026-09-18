@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -185,8 +185,19 @@ namespace KuaiKuaiLaunch.ViewModels
             {
                 if (SelectedCategory == null)
                 {
-                    if (Categories.Count == 0) AddCategory();
-                    SelectedCategory = Categories[0];
+                    if (Categories.Count == 0)
+                    {
+                        var defaultCat = new Category { Name = "常用工具", IconSymbol = "Apps24" };
+                        var defaultGrp = new ShortcutGroup { Name = "快捷应用" };
+                        defaultCat.Groups.Add(defaultGrp);
+                        var defaultCatVm = CreateCategoryViewModel(defaultCat);
+                        Categories.Add(defaultCatVm);
+                        SelectedCategory = defaultCatVm;
+                    }
+                    else
+                    {
+                        SelectedCategory = Categories[0];
+                    }
                 }
 
                 if (SelectedCategory.Groups.Count == 0)
@@ -204,6 +215,7 @@ namespace KuaiKuaiLaunch.ViewModels
 
             foreach (var path in paths)
             {
+                if (string.IsNullOrWhiteSpace(path)) continue;
                 try
                 {
                     var shortcutItem = LnkParserService.ParseDroppedPath(path);
