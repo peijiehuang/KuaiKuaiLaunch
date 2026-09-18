@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -35,6 +35,9 @@ namespace KuaiKuaiLaunch.ViewModels
 
         [ObservableProperty]
         private bool _autoStartWithWindows;
+
+        [ObservableProperty]
+        private bool _checkDesktopShortcutOnStartup;
 
         [ObservableProperty]
         private bool _enableEdgeDocking;
@@ -89,6 +92,7 @@ namespace KuaiKuaiLaunch.ViewModels
             _autoStartService = autoStartService;
 
             _autoStartWithWindows = _autoStartService.IsAutoStartEnabled();
+            _checkDesktopShortcutOnStartup = settings.CheckDesktopShortcutOnStartup;
             _enableEdgeDocking = settings.EnableEdgeDocking;
             _enableEdgeAutoHide = settings.EnableEdgeAutoHide;
             _autoHideDelayMs = settings.AutoHideDelayMs;
@@ -109,6 +113,7 @@ namespace KuaiKuaiLaunch.ViewModels
         {
             _settings.AutoStartWithWindows = AutoStartWithWindows;
             _autoStartService.SetAutoStart(AutoStartWithWindows);
+            _settings.CheckDesktopShortcutOnStartup = CheckDesktopShortcutOnStartup;
 
             _settings.EnableEdgeDocking = EnableEdgeDocking;
             _settings.EnableEdgeAutoHide = EnableEdgeAutoHide;
@@ -132,6 +137,25 @@ namespace KuaiKuaiLaunch.ViewModels
         {
             DialogResult = false;
             RequestClose?.Invoke();
+        }
+
+        /// <summary>
+        /// 当前软件版本号
+        /// </summary>
+        public string AppVersion => AppConstants.AppVersion;
+
+        /// <summary>
+        /// GitHub 项目地址
+        /// </summary>
+        public string GitHubUrl => AppConstants.GitHubUrl;
+
+        /// <summary>
+        /// 在默认浏览器中打开 GitHub 项目仓库主页
+        /// </summary>
+        [RelayCommand]
+        public void OpenGitHub()
+        {
+            AppConstants.OpenGitHub();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -25,7 +25,7 @@ namespace KuaiKuaiLaunch.Services
             _mainViewModel = mainViewModel;
             _edgeDockService = edgeDockService;
 
-            _notifyIcon = new NotifyIcon { Text = "快快启动", Visible = true };
+            _notifyIcon = new NotifyIcon { Text = $"{AppConstants.AppName} {AppConstants.AppVersion}", Visible = true };
             LoadTrayIcon();
 
             var menu = new ContextMenuStrip();
@@ -37,6 +37,7 @@ namespace KuaiKuaiLaunch.Services
             menu.Items.Add(topItem);
             menu.Items.Add(new ToolStripMenuItem("新建分类", null, (s, e) => _mainViewModel.AddCategoryCommand.Execute(null)));
             menu.Items.Add(new ToolStripMenuItem("软件设置", null, (s, e) => _mainViewModel.OpenSettingsCommand.Execute(null)));
+            menu.Items.Add(new ToolStripMenuItem("GitHub 项目主页", null, (s, e) => AppConstants.OpenGitHub()));
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(new ToolStripMenuItem("退出快快启动", null, (s, e) => ExitApp()));
 
@@ -56,6 +57,19 @@ namespace KuaiKuaiLaunch.Services
         /// </summary>
         private void LoadTrayIcon()
         {
+            try
+            {
+                var iconUri = new Uri("pack://application:,,,/assets/app.ico");
+                var streamInfo = System.Windows.Application.GetResourceStream(iconUri);
+                if (streamInfo?.Stream != null)
+                {
+                    using var stream = streamInfo.Stream;
+                    _notifyIcon.Icon = new Icon(stream, 32, 32);
+                    return;
+                }
+            }
+            catch { }
+
             try
             {
                 string? exePath = Environment.ProcessPath;

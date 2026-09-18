@@ -8,7 +8,8 @@
                  xmlns:ctrl="clr-namespace:KuaiKuaiLaunch.Views.Controls"
                  xmlns:conv="clr-namespace:KuaiKuaiLaunch.Converters"
                  mc:Ignorable="d"
-                 Title="快快启动" 
+                 Title="快快启动 beta V0.0.1" 
+                 Icon="assets/app.png"
                  Height="680" Width="530"
                  MinWidth="380" MinHeight="420"
                  ResizeMode="CanResize"
@@ -27,7 +28,7 @@
 
         <!-- Modern Fluent TitleBar: Native OS Dragging across entire header -->
         <ui:TitleBar Grid.Row="0"
-                     Title="快快启动"
+                     Title="快快启动 beta V0.0.1"
                      ShowMaximize="False"
                      ShowMinimize="False"
                      ShowClose="False"
@@ -43,7 +44,7 @@
                     <ui:SymbolIcon Symbol="Flash24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0" IsHitTestVisible="False" />
                     <TextBlock Text="快快启动" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorPrimaryBrush}" IsHitTestVisible="False" />
                     <Border Background="{DynamicResource AccentFillColorTertiaryBrush}" CornerRadius="4" Padding="4,1" Margin="6,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False">
-                        <TextBlock Text="Fluent" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                        <TextBlock Text="beta V0.0.1" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
                     </Border>
                 </StackPanel>
             </ui:TitleBar.Header>
@@ -51,6 +52,14 @@
             <!-- Right Window Actions -->
             <ui:TitleBar.TrailingContent>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
+                    <!-- GitHub Project Link Button -->
+                    <ui:Button Appearance="Transparent" 
+                               Padding="6" Margin="0,0,2,0" 
+                               ToolTip="访问 GitHub 开源项目主页"
+                               Click="OnGitHubClick">
+                        <ui:SymbolIcon Symbol="Code24" FontSize="15" />
+                    </ui:Button>
+
                     <!-- Pin / Always on Top Toggle Button -->
                     <ui:Button Appearance="Transparent" 
                                Padding="6" Margin="0,0,2,0" 

@@ -17,6 +17,9 @@ using DragEventArgs = System.Windows.DragEventArgs;
 using DragDropEffects = System.Windows.DragDropEffects;
 using DataFormats = System.Windows.DataFormats;
 using MessageBox = System.Windows.MessageBox;
+using MessageBoxButton = System.Windows.MessageBoxButton;
+using MessageBoxResult = System.Windows.MessageBoxResult;
+using MessageBoxImage = System.Windows.MessageBoxImage;
 
 namespace KuaiKuaiLaunch
 {
@@ -30,6 +33,7 @@ namespace KuaiKuaiLaunch
         private readonly IconExtractorService _iconExtractorService;
         private readonly LauncherService _launcherService;
         private readonly AutoStartService _autoStartService;
+        private readonly DesktopShortcutService _desktopShortcutService;
 
         private readonly MainViewModel _viewModel;
         private readonly EdgeDockService _edgeDockService;
@@ -49,6 +53,7 @@ namespace KuaiKuaiLaunch
             _iconExtractorService = new IconExtractorService(_storageService);
             _launcherService = new LauncherService(_storageService);
             _autoStartService = new AutoStartService();
+            _desktopShortcutService = new DesktopShortcutService();
 
             _viewModel = new MainViewModel(_storageService, _lnkParserService, _iconExtractorService, _launcherService, _autoStartService);
             DataContext = _viewModel;
@@ -111,6 +116,59 @@ namespace KuaiKuaiLaunch
             RegisterGlobalHotkey();
             ApplyTopmostState(_viewModel.Settings.AlwaysOnTop);
             ApplyTheme(_viewModel.Settings.Theme, force: true);
+
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, () =>
+            {
+                CheckAndPromptDesktopShortcut();
+            });
+        }
+
+        /// <summary>
+        /// 检查桌面是否存在快捷方式，若未检测到则提示用户创建
+        /// </summary>
+        private void CheckAndPromptDesktopShortcut()
+        {
+            try
+            {
+                if (!_viewModel.Settings.CheckDesktopShortcutOnStartup) return;
+
+                if (!_desktopShortcutService.HasDesktopShortcut())
+                {
+                    var result = MessageBox.Show(
+                        this,
+                        "检测到桌面尚未创建“快快启动”快捷方式，是否立即在桌面创建快捷方式？",
+                        "创建桌面快捷方式",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        bool created = _desktopShortcutService.CreateDesktopShortcut();
+                        if (created)
+                        {
+                            MessageBox.Show(
+                                this,
+                                "桌面快捷方式已成功创建！",
+                                "提示",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Information);
+                        }
+                        else
+                        {
+                            MessageBox.Show(
+                                this,
+                                "创建桌面快捷方式失败，请检查桌面目录权限。",
+                                "提示",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[MainWindow] CheckAndPromptDesktopShortcut failed: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -337,13 +395,18 @@ namespace KuaiKuaiLaunch
             if (targetW < 300) targetW = 530;
             if (targetH < 300) targetH = 680;
 
-            double targetX = cursorX - (targetW / 2);
-            double targetY = cursorY - 30;
+            // 鼠标中键唤醒：将软件窗口标题栏标红区域（闪电图标与“快快启动”标题处）精准对齐到鼠标当前坐标
+            const double anchorOffsetX = 70; // 标题栏标红区域水平对齐中心（闪电图标与快快启动文字处）
+            const double anchorOffsetY = 20; // 标题栏标红区域垂直对齐中心线
 
-            if (targetX + targetW > workRight - 20) targetX = workRight - targetW - 20;
-            if (targetX < workLeft + 20) targetX = workLeft + 20;
-            if (targetY + targetH > workBottom - 20) targetY = workBottom - targetH - 20;
-            if (targetY < workTop + 20) targetY = workTop + 20;
+            double targetX = cursorX - anchorOffsetX;
+            double targetY = cursorY - anchorOffsetY;
+
+            // 显示器工作区防越界修正：若窗口超出右边界或下边界，则向内靠齐，确保窗口完整可见
+            if (targetX + targetW > workRight) targetX = Math.Max(workLeft, workRight - targetW);
+            if (targetX < workLeft) targetX = workLeft;
+            if (targetY + targetH > workBottom) targetY = Math.Max(workTop, workBottom - targetH);
+            if (targetY < workTop) targetY = workTop;
 
             Left = targetX;
             Top = targetY;
@@ -353,6 +416,14 @@ namespace KuaiKuaiLaunch
             Activate();
             ApplyTopmostState(_viewModel.Settings.AlwaysOnTop);
             SaveWindowPlacement();
+        }
+
+        /// <summary>
+        /// 点击标题栏 GitHub 按钮：在默认浏览器中打开项目主页
+        /// </summary>
+        private void OnGitHubClick(object sender, RoutedEventArgs e)
+        {
+            AppConstants.OpenGitHub();
         }
 
         /// <summary>

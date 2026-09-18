@@ -1,4 +1,4 @@
-# 快快启动 (KuaiKuai Launch)
+# 快快启动 (KuaiKuai Launch) `beta V0.0.1`
 
 <p align="center">
   <img src="assets/poster.png" alt="快快启动 (KuaiKuai Launch) 介绍" width="100%" />
@@ -6,7 +6,8 @@
 
 <p align="center">
   一个简单轻量、支持边缘吸附与鼠标中键呼出的 Windows 桌面快捷启动工具<br>
-  <em>参考经典老牌软件「音速启动」，基于 WPF / .NET 10 随手做的小工具</em>
+  <em>参考经典老牌软件「音速启动」，基于 WPF / .NET 10 随手做的小工具</em><br>
+  <strong>GitHub 项目主页：<a href="https://github.com/peijiehuang/KuaiKuaiLaunch">https://github.com/peijiehuang/KuaiKuaiLaunch</a></strong>
 </p>
 
 ---
@@ -112,6 +113,17 @@
 └── tests/                            # 自动化测试项目
     └── ServiceTests.cs               # 单元测试集合
 ```
+
+---
+
+## 📦 软件下载 (Release `beta v0.0.1`)
+
+您可以直接前往 [GitHub Releases 页面](https://github.com/peijiehuang/KuaiKuaiLaunch/releases) 下载最新开箱即用的绿色免安装发布包：
+
+| 发布包版本 | 压缩包大小 | 说明 | 快速下载 |
+| :--- | :--- | :--- | :--- |
+| **KuaiKuaiLaunch_v0.0.1_beta_win-x64_Standalone.zip** | **~72.6 MB** | **【强烈推荐】独立免安装完整版**<br>内置完整 .NET 10 运行时，解压后双击 `KuaiKuaiLaunch.exe` 即开即用，无需额外配置任何环境。 | [前往 Releases 下载](https://github.com/peijiehuang/KuaiKuaiLaunch/releases) |
+| **KuaiKuaiLaunch_v0.0.1_beta_win-x64_Light.zip** | **~2.99 MB** | **轻巧框架依赖版**<br>仅不到 3MB 超小体积，需本机已安装 .NET 10 桌面运行时。 | [前往 Releases 下载](https://github.com/peijiehuang/KuaiKuaiLaunch/releases) |
 
 ---
 

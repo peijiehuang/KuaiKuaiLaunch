@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Encodings.Web;
@@ -168,7 +168,7 @@ namespace KuaiKuaiLaunch.Services
             {
                 EnsureDirectoriesExist();
                 string json = JsonSerializer.Serialize(categories, JsonOptions);
-                string tempFile = ShortcutsFilePath + ".tmp";
+                string tempFile = $"{ShortcutsFilePath}.{Guid.NewGuid():N}.tmp";
                 File.WriteAllText(tempFile, json);
                 File.Move(tempFile, ShortcutsFilePath, true);
             }
@@ -249,7 +249,7 @@ namespace KuaiKuaiLaunch.Services
             {
                 EnsureDirectoriesExist();
                 string json = JsonSerializer.Serialize(settings, JsonOptions);
-                string tempFile = SettingsFilePath + ".tmp";
+                string tempFile = $"{SettingsFilePath}.{Guid.NewGuid():N}.tmp";
                 File.WriteAllText(tempFile, json);
                 File.Move(tempFile, SettingsFilePath, true);
             }

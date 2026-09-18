@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace KuaiKuaiLaunch.Models
 {
@@ -58,6 +58,11 @@ namespace KuaiKuaiLaunch.Models
         /// 开机是否自动启动
         /// </summary>
         public bool AutoStartWithWindows { get; set; } = false;
+
+        /// <summary>
+        /// 程序启动时是否检查桌面快捷方式并提示创建
+        /// </summary>
+        public bool CheckDesktopShortcutOnStartup { get; set; } = true;
 
         /// <summary>
         /// 是否开启屏幕边缘吸附

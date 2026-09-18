@@ -1,0 +1,53 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - 'beta-*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore KuaiKuaiLaunch.csproj
+
+      - name: Run unit tests
+        run: dotnet test tests/KuaiKuaiLaunch.Tests.csproj -c Release --no-restore
+
+      - name: Publish Standalone Package (Self-Contained)
+        shell: pwsh
+        run: |
+          dotnet publish KuaiKuaiLaunch.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o publish/standalone
+          Compress-Archive -Path "publish/standalone/KuaiKuaiLaunch.exe" -DestinationPath "KuaiKuaiLaunch_v0.0.1_beta_win-x64_Standalone.zip" -Force
+
+      - name: Publish Light Package (Framework-Dependent)
+        shell: pwsh
+        run: |
+          dotnet publish KuaiKuaiLaunch.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o publish/light
+          Compress-Archive -Path "publish/light/KuaiKuaiLaunch.exe" -DestinationPath "KuaiKuaiLaunch_v0.0.1_beta_win-x64_Light.zip" -Force
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            KuaiKuaiLaunch_v0.0.1_beta_win-x64_Standalone.zip
+            KuaiKuaiLaunch_v0.0.1_beta_win-x64_Light.zip
+          name: 快快启动 Release ${{ github.ref_name }}
+          draft: false
+          prerelease: true
+          generate_release_notes: true

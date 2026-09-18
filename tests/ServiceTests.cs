@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -58,7 +58,8 @@ namespace KuaiKuaiLaunch.Tests
                 EnableEdgeAutoHide = false,
                 EnableMiddleClickWakeup = true,
                 AlwaysOnTop = true,
-                Theme = "Light"
+                Theme = "Light",
+                CheckDesktopShortcutOnStartup = false
             };
 
             storage.SaveSettings(settings);
@@ -69,6 +70,7 @@ namespace KuaiKuaiLaunch.Tests
             Assert.IsTrue(loaded.EnableMiddleClickWakeup);
             Assert.IsTrue(loaded.AlwaysOnTop);
             Assert.AreEqual("Light", loaded.Theme);
+            Assert.IsFalse(loaded.CheckDesktopShortcutOnStartup);
         }
 
         /// <summary>
@@ -232,6 +234,46 @@ namespace KuaiKuaiLaunch.Tests
             {
                 Assert.IsTrue(createdNewC, "主实例释放后，新实例应当可以重新成功获取互斥体");
                 mutexC.ReleaseMutex();
+            }
+        }
+
+        /// <summary>
+        /// 测试 DesktopShortcutService 创建快捷方式并能够精准解析其目标物理路径
+        /// </summary>
+        [TestMethod]
+        public void DesktopShortcutService_CreateAndResolveShortcut_ShouldWorkProperly()
+        {
+            var shortcutService = new DesktopShortcutService();
+            string? currentExe = shortcutService.GetCurrentExecutablePath();
+            Assert.IsNotNull(currentExe, "当前运行环境应当能够解析出主进程可执行文件绝对路径");
+            Assert.IsTrue(File.Exists(currentExe), $"当前可执行文件应当真实存在: {currentExe}");
+
+            string tempDir = Path.Combine(Path.GetTempPath(), "KuaiKuaiLaunch_Tests_" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(tempDir);
+            string tempLnk = Path.Combine(tempDir, "测试快捷方式.lnk");
+
+            try
+            {
+                // 1. 创建快捷方式
+                bool created = shortcutService.CreateDesktopShortcut(tempLnk);
+                Assert.IsTrue(created, "应当成功在目标路径创建快捷方式");
+                Assert.IsTrue(File.Exists(tempLnk), "快捷方式文件在磁盘上应当存在");
+
+                // 2. 解析快捷方式目标路径
+                string resolvedTarget = shortcutService.ResolveShortcutTarget(tempLnk);
+                Assert.IsFalse(string.IsNullOrWhiteSpace(resolvedTarget), "解析出的目标路径不应为空");
+                Assert.AreEqual(Path.GetFullPath(currentExe), Path.GetFullPath(resolvedTarget), "解析出的快捷方式目标应当与当前可执行文件绝对路径一致");
+            }
+            finally
+            {
+                try
+                {
+                    if (Directory.Exists(tempDir))
+                    {
+                        Directory.Delete(tempDir, true);
+                    }
+                }
+                catch { }
             }
         }
     }

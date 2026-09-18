@@ -11,7 +11,19 @@
     <RootNamespace>KuaiKuaiLaunch</RootNamespace>
     <AssemblyTitle>快快启动</AssemblyTitle>
     <Product>快快启动</Product>
+    <Version>0.0.1</Version>
+    <AssemblyVersion>0.0.1.0</AssemblyVersion>
+    <FileVersion>0.0.1.0</FileVersion>
+    <InformationalVersion>beta V0.0.1</InformationalVersion>
+    <PackageProjectUrl>https://github.com/peijiehuang/KuaiKuaiLaunch</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/peijiehuang/KuaiKuaiLaunch</RepositoryUrl>
+    <ApplicationIcon>assets\app.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="assets\app.ico" />
+    <Resource Include="assets\app.png" />
+  </ItemGroup>
 
   <ItemGroup>
     <Using Remove="System.Windows.Forms" />
